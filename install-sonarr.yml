@@ -1,0 +1,56 @@
+---
+- hosts: sonarr
+  become: yes
+  tasks:
+    - name: Install repo-mediaarea
+      apt:
+        deb: https://mediaarea.net/repo/deb/repo-mediaarea_1.0-13_all.deb
+
+    - name: Add Mono signing key
+      apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+        state: present
+
+    - name: Add mono repo
+      apt_repository:
+        repo: deb https://download.mono-project.com/repo/debian stable-stretch main
+        state: present
+    
+    - name: Add Sonarr signing key
+      apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: 2009837CBFFD68F45BC180471F4F90DE2A9B4BF8
+        state: present
+
+    - name: Add sonarr repo
+      apt_repository:
+        repo: deb https://apt.sonarr.tv/debian buster main
+        state: present
+
+    - name: Update repo cache
+      apt:
+        update_cache: yes
+
+    - name: Install Sonarr
+      apt:
+        name: sonarr
+        state: present
+  
+    - name: Create Jellyfin Group
+      group:
+        name: jellyfin
+        gid: 120
+        system: yes
+    - name: Add user sonarr to Jellyfin Group
+      user:
+        name: sonarr
+        groups: jellyfin
+        append: yes
+    - name: Create Jellyfin user
+      user:
+        name: jellyfin
+        system: yes
+        group: jellyfin
+        uid: 120
+        create_home: no
